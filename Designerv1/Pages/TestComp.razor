@@ -1,0 +1,219 @@
+﻿@page "/testcomp"
+@using System.Dynamic
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.CompilerServices
+@using Designerv1.Data.DataServices
+
+@inject IMetaModelService Meta_Model
+
+<b>
+@InstanceProperties.Where(x => x.Key == "instance_tostring").FirstOrDefault().Value
+</b> <br />
+@foreach (var field in GetProperties(object_id))
+{
+    @field.Key
+    @if (field.Value == "System.String")
+    {
+        <Input type="text" value="@InstanceProperties.Where(x => x.Key==field.Key).FirstOrDefault().Value">
+    }
+
+
+    <br />
+}
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    <button type="submit" class="btn btn-primary">Save</button>
+</div>
+
+
+        @code
+            {
+
+            [CascadingParameter] Guid instance_id { get; set; }
+            [CascadingParameter] int object_id { get; set; }
+            ExpandoObject ModelObject;
+            ExpandoObject ObjectInstance;
+            //List<ExpandoObject> Object_Properties;
+            //[Parameter] public DataX DataContext { get; set; }
+            //[Parameter] public Dictionary<string, string> FieldIdentifiers { get; set; } = new Dictionary<string, string> { { "Name", "string" }, { "Phone", "string" } };
+            //[Parameter] public TItem Context { get; set; }
+            //[Parameter] public EventCallback<TItem> OnClick { get; set; }
+
+
+            public Dictionary<string, string> ObjectProperties = new Dictionary<string, string>();
+            public IDictionary<string, object> InstanceProperties = new Dictionary<string, object>();
+
+            protected override void OnParametersSet()
+            {
+                try //OnParametersSet is called twice (1 for each parameter)
+                {
+                    if (object_id != 0)
+                    {
+                        ModelObject = new ExpandoObject();
+                        ObjectInstance = new ExpandoObject();
+                        ModelObject = Meta_Model.ReadObject(object_id);
+                        ObjectInstance = Meta_Model.GetInstance(instance_id, ModelObject);
+
+                        if (ModelObject != null)
+                        {
+                            ObjectProperties = new Dictionary<string, string>();
+                            var expandoDict = ModelObject as IDictionary<string, object>;
+                            object value = null;
+                            expandoDict.TryGetValue("ListOfProperties", out value);
+                            foreach (var item in value as List<ExpandoObject>)
+                            {
+                                ObjectProperties.Add(item.Where(x => x.Key == "prop_code").FirstOrDefault().Value.ToString(), "System.String");
+                            }
+                        }
+
+                        if (((dynamic)ObjectInstance).instance_id != Guid.Empty)
+                        {
+                            int cnt = 0;
+                            InstanceProperties = ObjectInstance as IDictionary<string, object>;
+                            //var expandoDict = ObjectInstance as IDictionary<string, object>;
+                            //object value = null;
+                            //expandoDict.TryGetValue("ListOfProperties", out value);
+                            //foreach (var item in value as List<ExpandoObject>)
+                            //{
+                            //    InstanceProperties.Add((cnt++).ToString(), item);
+                            //}
+
+                        }
+                        base.OnParametersSet();
+                        StateHasChanged();
+                    }
+                }catch
+                {
+
+                }
+            }
+
+            public Dictionary<string, string> GetProperties(int ob_id)
+            {
+                Dictionary<string, string> ObjectProperties = new Dictionary<string, string>();
+                if (Meta_Model.ReadObject(object_id) != null)
+                {
+                    var expandoDict = ModelObject as IDictionary<string, object>;
+                    object value = null;
+                    expandoDict.TryGetValue("ListOfProperties", out value);
+                    foreach (var item in value as List<ExpandoObject>)
+                    {
+                        ObjectProperties.Add(item.Where(x => x.Key == "prop_code").FirstOrDefault().Value.ToString(), "System.String");
+                    }
+                }
+
+                return ObjectProperties;
+            }
+
+            public int count = 0;
+
+            public string message;
+
+            /*
+            public RenderFragment CreateStringComponent(string fld, string fld_value) => builder =>
+            {
+                builder.OpenComponent(0, typeof(InputText));
+
+                // Get the initial property value
+                var propInfoValue = getPropertyType()
+                //var s = propInfoValue.GetValue(Context);
+                builder.AddAttribute(1, "Value", fld_value);
+
+                // Create the handler for ValueChanged. I use reflection to the value.
+                builder.AddAttribute(3, "ValueChanged",
+                                RuntimeHelpers.TypeCheck<EventCallback<System.String>>
+                                (EventCallback.Factory.Create<System.String>(this,
+                                EventCallback.Factory.CreateInferred(this,
+                                __value => propInfoValue.SetValue(Context, __value), (string)propInfoValue.GetValue(Context)))));
+
+                // Create an expression to set the ValueExpression-attribute.
+                var constant = System.Linq.Expressions.Expression.Constant(Context, typeof(TItem));
+                var exp = System.Linq.Expressions.MemberExpression.Property(constant, fld);
+                var lamb = System.Linq.Expressions.Expression.Lambda<Func<string>>(exp);
+
+                builder.AddAttribute(4, "ValueExpression", lamb);
+
+                builder.CloseComponent();
+            };
+
+            public RenderFragment CreateInt32Component(string fld) => builder =>
+            {
+                builder.OpenComponent(0, typeof(InputNumber<Int32>));
+
+                // Get the initial property value
+                var propInfoValue = typeof(TItem).GetProperty(fld);
+                var s = propInfoValue.GetValue(Context);
+                builder.AddAttribute(1, "Value", s);
+
+                // Create the handler for ValueChanged. I use reflection to the value.
+                builder.AddAttribute(3, "ValueChanged",
+                                RuntimeHelpers.TypeCheck<EventCallback<System.Int32>>
+                                (EventCallback.Factory.Create<System.Int32>(this,
+                                EventCallback.Factory.CreateInferred(this,
+                                __value => propInfoValue.SetValue(Context, __value), (System.Int32)propInfoValue.GetValue(Context)))));
+
+                // Create an expression to set the ValueExpression-attribute.
+                var constant = System.Linq.Expressions.Expression.Constant(Context, typeof(TItem));
+                var exp = System.Linq.Expressions.MemberExpression.Property(constant, fld);
+                var lamb = System.Linq.Expressions.Expression.Lambda<Func<System.Int32>>(exp);
+
+                builder.AddAttribute(4, "ValueExpression", lamb);
+
+                builder.CloseComponent();
+            };
+
+            public RenderFragment CreateBoolComponent(string fld) => builder =>
+            {
+                builder.OpenComponent(0, typeof(InputCheckbox));
+
+                // Get the initial property value
+                var propInfoValue = typeof(TItem).GetProperty(fld);
+                var s = propInfoValue.GetValue(Context);
+                builder.AddAttribute(1, "Value", s);
+
+                // Create the handler for ValueChanged. I use reflection to the value.
+                builder.AddAttribute(3, "ValueChanged",
+                                    RuntimeHelpers.TypeCheck<EventCallback<System.Boolean>>
+                                    (EventCallback.Factory.Create<System.Boolean>(this,
+                                    EventCallback.Factory.CreateInferred(this,
+                                    __value => propInfoValue.SetValue(Context, __value), (System.Boolean)propInfoValue.GetValue(Context)))));
+
+                // Create an expression to set the ValueExpression-attribute.
+                var constant = System.Linq.Expressions.Expression.Constant(Context, typeof(TItem));
+                var exp = System.Linq.Expressions.MemberExpression.Property(constant, fld);
+                var lamb = System.Linq.Expressions.Expression.Lambda<Func<System.Boolean>>(exp);
+
+                builder.AddAttribute(4, "ValueExpression", lamb);
+
+                builder.CloseComponent();
+            };
+
+            private object getPropertyType(object v)
+            {
+                switch (v)
+                {
+                    case 100: return "";
+                    case 101: return "";
+                    case 110: return default(Int64);
+                    case 111: return default(Int32);
+                    case 112: return default(Int16);
+                    case 113: return default(byte);
+                    case 114: return default(Boolean);
+                    case 115: return default(Decimal);
+                    case 120: return default(DateTime);
+                    case 121: return default(DateTime);
+                    case 122: return default(DateTime);
+                    case 123: return default(DateTime);
+                    case 150: return default(Int64);//MOney
+                    case 151: return default(Int64);//Small money
+                    case 160: return default(Guid);
+                    case 190: return default(Byte[]);
+                    case 199: return "Object";
+                    default: return "Object";
+                }
+            }
+            */
+        }
+
+

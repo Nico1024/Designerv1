@@ -1,0 +1,66 @@
+﻿@page "/index2"
+@using System.IO
+@using System.Dynamic
+@using System.Linq
+@using Newtonsoft.Json
+@using Designerv1.Data.DataServices
+@using Designerv1.Data;
+@using Microsoft.EntityFrameworkCore;
+
+@inject IMetaModelService Meta_Model
+@inject IModelServices Model 
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
+
+<h1>Welcome to your new designer </h1>
+
+<h3>Files and directories</h3>
+<div class="row">
+    <div class="col-md-6" style="margin-bottom: 16px;width:30%">
+        <div class="row">
+            <RadzenTree Data="@objectModel.app_Objects" Expand="@OnExpand" Change="@OnChange">
+                <RadzenTreeLevel TextProperty="Name">
+                </RadzenTreeLevel>
+            </RadzenTree>
+        </div>
+    </div>
+    <div class="col-md-6" style="margin-bottom: 16px">
+        <div class="col-md-6" style="margin-bottom: 16px">
+            <h3>Events</h3>
+            <RadzenCard style="overflow: auto;height:500px;width:200%">
+
+            </RadzenCard>
+        </div>
+    </div>
+</div>
+@code{
+
+
+    string codigo_de_error;
+    string text = "Hi";
+    IEnumerable<string> entries = null;
+
+    private ObjectModel objectModel = new ObjectModel();
+
+    string content;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        objectModel = Model.objectModel;
+    }
+
+    void OnExpand(TreeExpandEventArgs args)
+    {
+        var obj = args.Value as app_object;
+
+        args.Children.Data = Model.GetInstances(obj);
+        args.Children.TextProperty = "instance_tostring";
+        args.Children.HasChildren = (product) => false;
+    }
+
+    void OnChange(TreeEventArgs args)
+    {
+
+    }
+
+}

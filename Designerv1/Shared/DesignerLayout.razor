@@ -1,0 +1,15 @@
+﻿@inherits LayoutComponentBase
+
+<NavMenu />
+<div class="main">
+    <div class="top-row px-4">
+        <button type="button" id="sidebarCollapse" class="btn btn-info">
+            <i class="fas fa-align-left"></i>
+            <span>Toggle Sidebar</span>
+        </button>
+        <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+    </div>
+    <div class="content px-4">
+        @Body
+    </div>
+</div>

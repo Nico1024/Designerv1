@@ -1,0 +1,140 @@
+﻿@layout DesignerLayout
+@page "/designer"
+@using System.IO
+@using System.Dynamic
+@using System.Linq
+@using Newtonsoft.Json
+@using Designerv1.Data.DataServices
+@using Designerv1.Data;
+@using Microsoft.EntityFrameworkCore;
+@using Microsoft.AspNetCore.Components;
+
+@inject IMetaModelService Meta_Model
+@inject IModelServices Model
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
+@inject IJSRuntime jsRuntime
+@inject NavigationManager NavigationManager;
+
+<h1>Welcome to your new designer </h1>
+
+<!--<button @onclick="asd">change text</button>-->
+<div class="Nico_row">
+    <div id="tree_container" class="Nico_column">
+
+        <ul>
+            @foreach (app_object item in Model.objectModel.app_Objects)
+            {
+            <li id=@(item.object_id+"|"+item.object_id) data-jstree='{ "opened" : false, "id":@item.object_id, "children":true, "icon":"/css/tree-icon.png"}'>
+                <b> @item.object_id </b> &nbsp; @item.Name
+
+                <ul>
+                    @foreach (dynamic expo in Meta_Model.ReadInstancesWithObjectIdForJsTree(item.object_id))
+                    {
+                        <li id=@(item.object_id+"|"+validate_instance_id(expo.id))>
+                            @try
+                            {
+                                /*@(expo.text +"->"+item.object_id+"|"+validate_instance_id(expo.id))*/
+                                @expo.text
+                            }
+                            catch (Exception e)
+                            {
+                                @("Error")
+                            }
+
+                        </li>
+                    }
+                </ul>
+
+            </li>
+            }
+
+        </ul>
+
+    </div>
+    <div id="instance_container" class="Nico_row">
+        <CascadingValue Value="@selected_instance_id">
+            <CascadingValue Value="@selected_object_id">
+                <TestComp></TestComp>
+            </CascadingValue>
+        </CascadingValue>
+
+    </div>
+</div>
+
+@code{
+
+    private Guid selected_instance_id;
+    private int selected_object_id;
+    string codigo_de_error;
+    protected static string text = "Hi";
+    IEnumerable<string> entries = null;
+    private int wrong_objects_counter = 0;
+
+    private string validate_instance_id(string id)
+    {
+        string return_value;
+        if (id.Length < 5)
+        {
+            return_value = wrong_objects_counter.ToString();
+            wrong_objects_counter++;
+        }
+        else return_value = id;
+
+        return return_value;
+    }
+
+    private ObjectModel objectModel = new ObjectModel();
+
+    string content;
+
+    protected async override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var dotNetReference = DotNetObjectReference.Create(this);
+            await jsRuntime.InvokeVoidAsync("LoadTree", dotNetReference);
+            objectModel = Model.objectModel;
+            
+        }
+    }
+
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+
+    }
+
+    //[JSInvokable]
+    //public static Task<int> OnTreedbclick()
+    //{
+    //    //text = "sdfsdfsdf";
+    //    return Task.FromResult(new Random().Next());
+    //}
+
+    [JSInvokable("asdasd")]
+    public void asd(string instance_id_and_object_id)
+    {
+        text = instance_id_and_object_id;
+        selected_object_id = Convert.ToInt32(instance_id_and_object_id.Split('|').ElementAt(0));
+        try
+        {
+            selected_instance_id = Guid.Parse(instance_id_and_object_id.Split('|').ElementAt(1));
+        }catch(Exception e)
+        {
+
+        }
+
+        StateHasChanged();
+    }
+
+    /*
+    [JSInvokable("NavigateToCreate")]
+    public void NavigateToCreate(string instance_id_and_object_id)
+    {
+        NavigationManager.NavigateTo("newinstance/" + instance_id_and_object_id.Split('|').ElementAt(0));
+    }
+    */
+
+}

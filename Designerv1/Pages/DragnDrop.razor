@@ -1,0 +1,95 @@
+﻿@using Blazor.DragDrop.Core;
+@page "/dragndrop"
+<h3>Test of drag n drop</h3>
+
+<div id="main" class="container-fluid">
+
+    <h5>Allow dragging: </h5>
+    <EditForm Model="this">
+
+        <div class="row">
+            <ol>
+                <li>
+                    Item <InputCheckbox @bind-Value="Item1"></InputCheckbox>
+                </li>
+                <li>
+                    Item <InputCheckbox @bind-Value="Item2"></InputCheckbox>
+                </li>
+                <li>
+                    Item <InputCheckbox @bind-Value="Item3"></InputCheckbox>
+                </li>
+                <li>
+                    Item <InputCheckbox @bind-Value="Item4"></InputCheckbox>
+                </li>
+            </ol>
+        </div>
+
+    </EditForm>
+
+    <Dropzone class="row">
+        <Draggable Name="Item1" AllowDrag="(d) => AllowDrag(d)">
+            <div class="m-2 col column-style" style="pointer-events:none">
+                Item 1
+            </div>
+        </Draggable>
+        <Draggable Name="Item2" AllowDrag="(d) => AllowDrag(d)">
+            <div class="m-2 col column-style" style="pointer-events:none">
+                Item 2
+            </div>
+        </Draggable>
+        <Draggable Name="Item3" AllowDrag="(d) => AllowDrag(d)">
+            <div class="m-2 col column-style" style="pointer-events:none">
+                Item 3
+            </div>
+        </Draggable>
+        <Draggable Name="Item4" AllowDrag="(d) => AllowDrag(d)">
+            <div class="m-2 col column-style" style="pointer-events:none">
+                Item 4
+            </div>
+        </Draggable>
+    </Dropzone>
+ 
+</div>
+
+@code{
+
+    private Dictionary<string, bool> _allowed =
+            new Dictionary<string, bool>() { { "Item1", true }, { "Item2", true }, { "Item3", true }, { "Item4", true } };
+
+    public bool AllowDrag(DraggableItem item)
+    {
+        if (item == null) return true;
+
+        return _allowed[item.Name];
+    }
+
+    private void SetAllowed(string name, bool value)
+    {
+        _allowed[name] = value;
+        StateHasChanged();
+    }
+
+    public bool Item1
+    {
+        get => _allowed["Item1"];
+        set => SetAllowed("Item1", value);
+    }
+
+    public bool Item2
+    {
+        get => _allowed["Item2"];
+        set => SetAllowed("Item2", value);
+    }
+
+    public bool Item3
+    {
+        get => _allowed["Item3"];
+        set => SetAllowed("Item3", value);
+    }
+
+    public bool Item4
+    {
+        get => _allowed["Item4"];
+        set => SetAllowed("Item4", value);
+    }
+}
