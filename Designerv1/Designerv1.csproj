@@ -7,7 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="1.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Radzen.Blazor" Version="2.1.18" />
     <PackageReference Include="blazor-dragdrop" Version="1.1.5" />
     <PackageReference Include="Blazorise" Version="0.8.8.4" />
